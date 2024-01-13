@@ -1,0 +1,118 @@
+*, html, body 
+{
+	margin: 0;
+	padding: 0;
+}
+
+.logout_button{
+	font-size: medium;
+	background-color: #b6c199;
+	box-sizing: border-box;
+	border-bottom: hidden;
+	border-top: hidden;
+	border-left: hidden;
+	border-right: hidden;
+	text-align: center;
+	width: 5em;
+}
+
+.header 
+{
+	font-size: 2em;
+	display: flex;
+	flex-direction: row;
+}
+
+.header .addButton
+{
+	font-size: 2.5em;
+	background-color: #b6c199;
+	text-decoration: none;
+	color: #ccc;
+	text-align: center;
+	box-sizing: border-box;
+	padding: 0.1em;
+	width: 2em;
+}
+
+.header .userInfo
+{
+	display: flex;
+	justify-content: center;
+	width: 100%;
+	text-align: center;
+	align-items: center;
+}
+
+.header .userInfo img
+{
+	width: 4rem;
+	height: 4rem;
+	border-radius: 100%;
+}
+
+.displayFlushCard
+{
+	box-sizing: border-box;
+	width: 100%;
+	padding: 1rem;
+	background-color: #eee;
+	margin-top: 2rem;
+}
+
+
+.flushCardList
+{
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	grid-gap: 1em;
+	list-style: none;
+}
+
+.flushCard 
+{
+	display: flex;
+	position: relative;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	background-color: #b6c199;
+	box-sizing: border-box;
+	padding: 2em;
+	min-height: 15em;
+	transition: transform .5s;
+}
+
+.flushCardRotate
+{
+	transform: rotateX(360deg);
+}
+
+.flushCard .term
+{
+	font-size: 2em;
+	font-weight: 900;
+	text-align: center;
+}
+
+.flushCard .description
+{
+	font-size: 1.3em;
+	overflow: hidden;
+}
+
+.flushCard .time 
+{
+	width: 100%;
+	position: absolute;
+	top: 89%;
+	padding-right: 1em;
+	text-align: right;
+}
+
+.list_option {
+display: block;
+padding: 10px;
+border: none;
+cursor: pointer;
+}

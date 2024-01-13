@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>"CREATE FLASHCARD</title>
+        <style>
+            .container{
+                width: 100%;
+                display: flex;
+                padding: 10;
+                align-items: center;
+                justify-content: flex-start; /* Changed from center to flex-start */
+                flex-wrap: wrap;
+            }
+            .title{
+                flex:1;
+                text-align: center;
+            }
+            .profile-pic img{
+                width: 50px;
+                height: 50px;
+                margin-right: 10px;
+            }
+            hr{
+                border: none;
+                height: 2px;
+                background-color: #b6c199;
+                margin: 20px 0;
+            }            
+            label{
+                color:rgb(18, 37, 37);
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 16px;
+            }
+            button{
+                background-color: #b6c199;
+                color: black;
+                text-emphasis-color: rgb(245, 242, 242);
+                font-family: 'Courier New', Courier, monospace;
+                padding: 5px 10px;
+                font-size: 16px;
+                border: none;
+                cursor: pointer;
+            }
+            textarea{
+                background-color: #ddd;
+                padding: 15px;
+                margin: 5px 0 22px 0;
+                display: inline-block;
+                width: 50%;
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 16px;
+            }
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script>
+            function GetURLParameter(sParam)
+            {
+                var sPageURL = window.location.search.substring(1);
+                var sURLVariables = sPageURL.split('&');
+                for (var i = 0; i < sURLVariables.length; i++) 
+                {
+                    var sParameterName = sURLVariables[i].split('=');
+                    if (sParameterName[0] == sParam) 
+                    {
+                        return sParameterName[1];
+                    }
+                }
+            }
+            var userName = GetURLParameter('username');
+            var tokenType = GetURLParameter('tokenType');
+            var idToken = GetURLParameter('idToken');
+
+            var callAPI = (term, description)=>{
+                const url_createFlashcard = "https://10mob4aqg8.execute-api.us-east-1.amazonaws.com/Dev/postapi";
+                var rawJson = JSON.stringify({
+                        'term': term,
+                        'description': description,
+                        'creatorUsername': userName
+                    });
+                $.ajax({
+                    mode: 'no-cors',
+                    method: 'POST',
+                    headers: {
+                        'Authorization': tokenType + " " + idToken
+                    },
+                    url:url_createFlashcard,
+                    data: rawJson,
+                    success: function(data) {
+                        console.log(data);
+                        alert('Thank you for contribution, ' + userName);
+                        window.location.href="displayCard.html" + window.location.search;
+                    },
+                    dataType: 'json'
+                })
+
+                // var requestOptions = {
+                //     mode: 'no-cors', 
+                //     method: 'POST',
+                //     body: rawJson, redirect: 'follow'};
+                // fetch("https://10mob4aqg8.execute-api.us-east-1.amazonaws.com/Dev/postapi", requestOptions)
+                // .then(response => {response.text(); console.log(response)})
+                // // .then(result => alert(JSON.parse(result).body))
+				// .then(result => console.log(result))
+				// .then(function(){alert('Thank you, ' + userName); window.location.href = "displayCard.html" + window.location.search;})
+                // .catch(error => console.log('Error', error));
+            }
+        </script> 
+    </head>
+    <body>
+        <div class="container">
+            <div class ="title">
+                <h1 id="title"> Unknown </h1>
+                <script>
+                    dynamicUsername = "Welcome, " + GetURLParameter('username');
+                    document.getElementById("title").innerHTML = dynamicUsername;
+                </script>
+            </div>
+        </div>
+        <hr>
+        <div class="form">
+            <h2> Register New Flashcard </h2>
+            <form id="createFlashcardForm">
+                <p><label>Term : </label></p>
+                <textarea id="term" name="term" cols="50" style="overflow:auto"> </textarea>
+                <br>
+                <p><label>Description : </label></p>
+                <textarea id="description" name="Description" rows="20" cols="50" style="overflow:auto"> </textarea>
+                <br>
+				<!-- <button type="button" onclick="callAPI(document.getElementById('term').value, 
+                document.getElementById('description').value);alert('Thank you, ' + userName);history.back()">Submit</button> -->
+				
+				<button type="button" onclick="callAPI(document.getElementById('term').value, 
+                document.getElementById('description').value);">Submit</button>
+                <!-- <button type="button" onclick="document.write(userName)">Submit</button> -->
+            </form>
+        </div>  
+    </body>
+</html>

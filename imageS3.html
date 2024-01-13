@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In Form</title>
+</head>
+<style>
+    * {box-sizing: border-box}
+
+    /* Add padding to containers */
+    .container {
+    padding: 16px;
+    }
+
+    /* Full-width input fields */
+    input[type=text], input[type=email], input[type=password] {
+    width: 100%;
+    padding: 15px;
+    margin: 5px 0 22px 0;
+    display: inline-block;
+    border: none;
+    background: #f1f1f1;
+    }
+
+    input[type=text]:focus, input[type=password]:focus {
+    background-color: #ddd;
+    outline: none;
+    }
+
+    /* Overwrite default styles of hr */
+    hr {
+    border: 1px solid #f1f1f1;
+    margin-bottom: 25px;
+    }
+
+    /* Set a style for the submit/register button */
+    .registerbtn {
+    background-color: #04AA6D;
+    color: white;
+    padding: 16px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    opacity: 0.9;
+    }
+
+    .registerbtn:hover {
+    opacity:1;
+    }
+
+    /* Add a blue text color to links */
+    a {
+    color: dodgerblue;
+    }
+
+    /* Set a grey background color and center the text of the "sign in" section */
+    .signin {
+    background-color: #f1f1f1;
+    text-align: center;
+    }
+</style>
+<body>
+    <form id="form">
+        <div class="container">
+          <h1>Register</h1>
+          <p>Please fill in this form to create an account.</p>
+          <hr>
+        
+          <label for="text"><b>Username</b></label>
+          <input type="text" placeholder="Enter Username" name="username" id="username" required>
+          <span id = "message" style="color:red"> </span><br><br>
+
+          <label for="email"><b>Email</b></label>
+          <input type="email" placeholder="Enter Email" name="email" id="email" required><br><br>
+      
+          <label for="psw"><b>Password</b></label>
+          <input type="password" placeholder="Enter Password" name="psw" id="psw" required>
+
+          <span><b>Are you an instructor?</b></span><br>
+          <input type="radio" id="1" name="instructor" value="yes" checked="checked">
+          <label for="1">Yes</label><br>
+
+          <input type="radio" id="2" name="instructor" value="no">
+          <label for="2">No</label><br></br>
+        
+          <label for="text"><b>Upload Profile Picture</b></label><br>
+          <!-- <label for="files">Select file</label> -->
+          <input id="file" type="file"/>
+
+          <hr>
+          <button type="submit" class="registerbtn" >Register</button>
+        </div>
+      
+      </form>
+
+      <div class="container signin">
+        <p>Already have an account? <a href="/login">Sign in</a>.</p>
+      </div>
+      
+      <script>
+        const form = {
+                submit: document.querySelector(".registerbtn"),
+                username: document.querySelector("#username"),
+                email: document.querySelector("#email"),
+                password: document.querySelector("#psw"),
+                instructor: document.getElementsByName('instructor'),
+            };
+        
+        let button = form.submit.addEventListener("click", (e)=> {
+            e.preventDefault();
+            
+            const url_signup = 'https://dn5hixxh50.execute-api.us-east-1.amazonaws.com/dev';
+            const url_update_imagine = "https://benuv18za9.execute-api.us-east-1.amazonaws.com/dev";
+            
+            fetch(url_signup, {
+                method: "POST",
+                headers: {
+                  Accept: "application/json, text/plain, */*",
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  username: form.username.value,
+                  email: form.email.value,
+                  password: form.password.value,
+                  role: form.instructor[0].checked ? "instructor" : "student"
+                }),
+            }).then((response) => response.json())
+              .then((data) => {
+                if (data.statusCode === 200) {
+                    if(confirm(data.body)) document.location = '/login';
+                } else if (data.statusCode === 409) {
+                    document.getElementById("message").innerHTML = "This username is already taken.";
+                }
+              })
+              .catch((err) => {
+                  console.log(err);
+              });
+
+            const profilePicForm = document.getElementById("profile-pic-form");
+            const inputFile = document.getElementById("file");
+            const formData = new FormData();
+
+            for (const file of inputFile.files) {
+                formData.append("files", file);
+            }
+            formData.append("username", form.username.value)
+
+            fetch(url_update_imagine, {
+                method: "POST",
+                body: formData
+            }).then((res) => {console.log(res)})
+            .catch((error) => ("Something went wrong!", error));
+
+        });
+
+    </script>
+</body>
+
+</html>
+

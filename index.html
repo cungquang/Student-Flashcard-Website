@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sign In Form</title>
+    </head>
+
+    <style>
+        * {box-sizing: border-box}
+
+        body{
+          background-color: #b6c199;
+        }
+
+        /* style the container */
+        .container {
+          position: relative;
+          border-radius: 5px;
+          background-color:white;
+          padding: 20px 0 30px 0;
+        }
+        
+        /* style inputs and link buttons */
+        input,
+        .btn {
+          width: 100%;
+          padding: 12px;
+          border: none;
+          border-radius: 4px;
+          margin: 5px 0;
+          opacity: 0.85;
+          display: inline-block;
+          font-size: 17px;
+          line-height: 20px;
+          text-decoration: none; /* remove underline from anchors */
+        }
+        
+        input:hover,
+        .btn:hover {
+          opacity: 1;
+        }
+        
+        /* style the submit button */
+        input[type=submit] {
+          background-color: #b6c199;
+          color: black;
+          cursor: pointer;
+        }
+        
+        input[type=submit]:hover {
+          background-color: #b6c199;
+        }
+        
+        /* Two-column layout */
+        .col {
+          float: center;
+          width: 50%;
+          margin: auto;
+          padding: 0 50px;
+          margin-top: 6px;
+        }
+
+        .sub_col{
+          align-items: center;
+          text-align: center;
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+          content: "";
+          display: table;
+          clear: both;
+        }
+        
+        /* text inside the vertical line */
+        .inner {
+          position: absolute;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          background-color: #f1f1f1;
+          border: 1px solid #ccc;
+          border-radius: 50%;
+          padding: 8px 10px;
+        }
+        
+        /* hide some text on medium and large screens */
+        .hide-md-lg {
+          display: none;
+        }
+        
+        /* bottom container */
+        .bottom-container {
+          width: 35%;
+          text-align: center;
+          background-color: #666;
+          margin: auto;
+          border-radius: 0px 0px 4px 4px;
+        }
+
+        .nav
+        {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .nav img {
+          width: 200px;
+          height: 200px;
+          align-items: center;
+        }
+        
+        /* Responsive layout - when the screen is less than 650px wide, make the two columns stack on top of each other instead of next to each other */
+        @media screen and (max-width: 650px) {
+          .col {
+            width: 100%;
+            margin-top: 0;
+          }
+          .bottom-container {
+            width: 80%;
+          }
+          /* show the hidden text on small screens */
+          .hide-md-lg {
+            display: block;
+            text-align: center;
+          }
+        }
+
+        .username{
+          border: 1px solid black;
+          padding: 10px;
+        }
+
+        .psw{
+          border: 1px solid black;
+          padding: 10px;
+        }
+    </style>
+
+    <body>
+        <div class="container">
+            <form>
+                <div class="row">
+                  <div class = "nav" style="align-items:center;">
+                    <img class="logo" src="https://upload-api-image123.s3.amazonaws.com/applicationLogo.JPG" alt="">
+                      <h2 style="text-align:center; font-size:40px;">Flashlight, Learn Everywhere!</h2>
+                  </div>
+            
+                <div class="col">
+                    <input type="text" name="username" placeholder="Username" id="username" class="username" required>
+                    <input type="password" name="password" placeholder="Password" id="psw" class="psw" required>
+                    <input type="submit" value="Login" id="login_btn" style="font-family: 'Courier New', Courier, monospace;">
+                </div>
+                <div class="sub_col">
+                  <p>Do not have an account? Please <a href="signup.html"><u><em>Sign-up</em></u></a></p>
+                  </div>
+                </div>
+            </form>
+            </div>
+            
+            <div class="bottom-container">
+                <div class="row">
+                </div>
+            </div>
+        </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script>
+            const url_signin = "https://10mob4aqg8.execute-api.us-east-1.amazonaws.com/Dev/cognito/signin_test";
+            const url_validate = "https://10mob4aqg8.execute-api.us-east-1.amazonaws.com/Dev/validate";
+            const form = {
+                    login: document.querySelector("#login_btn"),
+                    username: document.querySelector("#username"),
+                    password: document.querySelector("#psw"),
+            };
+            
+            let button = form.login.addEventListener("click", (e)=> {
+                e.preventDefault();
+
+                $.ajax({
+                  mode: 'no-cors',
+                  type: 'POST',
+                  url: url_signin,
+                  data: JSON.stringify({ username: form.username.value, password: form.password.value}),
+                  success: function(data) {
+                    console.log("finish");
+                    const authentication = JSON.parse(data.body);
+                    const token = {
+                      TokenType: authentication.AuthenticationResult.TokenType,
+                      AccessToken: authentication.AuthenticationResult.AccessToken,
+                      IdToken: authentication.AuthenticationResult.IdToken,
+                    };
+                    
+                    // retrieve data from dynamoDB to get role
+                    $.ajax({
+                      mode:'no-cors',
+                      type: 'POST',
+                      headers: {
+                        'Authorization': token.TokenType + " " + token.IdToken
+                      },
+                      url: url_validate,
+                      data: JSON.stringify({
+                        username: form.username.value,
+                        password: form.password.value
+                      }),
+                      success: function(data) {
+                        alert("Login Successfully");
+                        const userInfo = JSON.parse(data.body);
+                        // New - append access token to the link
+                        location.href = `displayCard.html?username=${form.username.value}&role=${userInfo.role}&tokenType=${token.TokenType}&idToken=${token.IdToken}&accessToken=${token.AccessToken}`;
+                      },
+                      dataType: "json",
+                    })
+                  },
+                  dataType: "json",
+                });
+    
+    
+            });
+        </script>
+    </body>
+    
+
+</html>

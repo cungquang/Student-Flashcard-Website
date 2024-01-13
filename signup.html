@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In Form</title>
+</head>
+<style>
+    * {box-sizing: border-box}
+
+    header{
+      background-color: white;
+    }
+
+    body{
+      background-color: white;
+    }
+
+    footer{
+      background-color: white;
+    }
+
+    /* Add padding to containers */
+    .container {
+    padding: 16px;
+    }
+
+    /* Full-width input fields */
+    input[type=text], input[type=email], input[type=password] {
+    width: 100%;
+    padding: 15px;
+    margin: 5px 0 22px 0;
+    display: inline-block;
+    border: none;
+    background: #f1f1f1;
+    }
+
+    input[type=text]:focus, input[type=password]:focus {
+    background-color: #F5F5DC;
+    outline: none;
+    }
+
+    /* Overwrite default styles of hr */
+    hr {
+    border: 1px solid #f1f1f1;
+    margin-bottom: 25px;
+    }
+
+    /* Set a style for the submit/register button */
+    .registerbtn {
+    background-color: #b6c199;
+    color: black;
+    padding: 16px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    opacity: 0.9;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+    }
+
+    .registerbtn:hover {
+    opacity:1;
+    }
+
+    /* Add a blue text color to links */
+    a {
+    color: dodgerblue;
+    }
+
+    /* Set a grey background color and center the text of the "sign in" section */
+    .signin {
+    text-align: center;
+    }
+</style>
+<body>
+    <form id="form">
+        <div class="container">
+          <h1>Register</h1>
+          <p>Please fill in this form to create an account.</p>
+          <hr>
+        
+          <label for="text"><b>Username</b></label>
+          <input type="text" placeholder="Enter Username" name="username" id="username" required>
+          <span id = "message" style="color:red"> </span><br><br>
+
+          <label for="email"><b>Email</b></label>
+          <input type="email" placeholder="Enter Email" name="email" id="email" required><br><br>
+      
+          <label for="psw"><b>Password</b></label>
+          <input type="password" placeholder="Enter Password" name="psw" id="psw" required>
+
+          <span><b>Are you an instructor?</b></span><br>
+          <input type="radio" id="1" name="instructor" value="yes" checked="checked">
+          <label for="1">Yes</label><br>
+
+          <input type="radio" id="2" name="instructor" value="no">
+          <label for="2">No</label><br></br>
+        
+          <label for="text"><b>Upload Profile Picture</b></label><br>
+          <!-- <label for="files">Select file</label> -->
+          <input id="file" type="file"/>
+
+          <hr>
+          <button type="submit" class="registerbtn" >Register</button>
+          <div class="signin">
+            <p>Already have an account? Please <a href="/"><u><em>Sign-in</em></u></a></p>
+          </div>
+          
+        </div>
+        
+      </form>
+
+       
+
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+      <script>
+        const form = {
+                submit: document.querySelector(".registerbtn"),
+                username: document.querySelector("#username"),
+                email: document.querySelector("#email"),
+                password: document.querySelector("#psw"),
+                instructor: document.getElementsByName('instructor'),
+            };
+        
+        let button = form.submit.addEventListener("click", (e)=> {
+            e.preventDefault();
+            
+            const url_cognito = 'https://10mob4aqg8.execute-api.us-east-1.amazonaws.com/Dev/cognito';
+            const url_verifyEmail = 'https://10mob4aqg8.execute-api.us-east-1.amazonaws.com/Dev/email';
+            const url_dynamodb = 'https://10mob4aqg8.execute-api.us-east-1.amazonaws.com/Dev/userprofile';
+            
+            let uploadUserImgFunc = () => {
+              const profilePicForm = document.getElementById("profile-pic-form");
+              const inputFile = document.getElementById("file");
+              const formData = new FormData();
+
+              for (const file of inputFile.files) {
+                  formData.append("files", file);
+              }
+              formData.append("username", form.username.value);
+
+              // create user in 
+              fetch("https://10mob4aqg8.execute-api.us-east-1.amazonaws.com/Dev/uploadimage", {
+                  mode: "no-cors",
+                  method: "POST",
+                  body: formData
+              }).then((res) => {console.log(res)})
+              .catch((error) => ("Something went wrong!", error));
+            }
+
+            // Generate user in Cognito
+            $.ajax({
+              mode: 'no-cors',
+              type:'POST',
+              url: url_cognito,
+              data: JSON.stringify({
+                username: form.username.value,
+                password: form.password.value,
+                email: form.email.value
+              }),
+              success: function(data) {
+                if(data.statusCode == 200){
+                  let verifiedCode = null;
+                  
+                  while (verifiedCode == null){
+                    verifiedCode = prompt("Please enter your verification code:");
+                  }
+
+                  // verify email address
+                  $.ajax({
+                    mode: 'no-cors',
+                    type: 'POST',
+                    url: url_verifyEmail,
+                    data: JSON.stringify({
+                      username: form.username.value,
+                      verification_code: verifiedCode 
+                    }),
+                    success: function(data) {
+                      console.log(data);
+                      if(data.statusCode == 200){
+                        //insert data into Dynamodb
+                        $.ajax({
+                          mode: 'no-cors',
+                          type: 'POST',
+                          url: url_dynamodb,
+                          data: JSON.stringify({
+                            username: form.username.value,
+                            email: form.email.value,
+                            password: form.password.value,
+                            role: form.instructor[0].checked ? "instructor" : "student"
+                          }),
+                          success: function(data) {
+                            uploadUserImgFunc();
+                            alert("Welcome, " + form.username.value);
+                            document.location = '/';
+                          }
+                        })
+                      } else {
+                        alert("Unable to verify email address, Please contact admin");
+                      }
+                    },
+                    dataType: 'json'
+                  })
+                } else {
+                  alert("Unable to create user");
+                }
+              },
+              dataType: 'json'
+            })
+
+        });
+
+    </script>
+</body>
+
+</html>
+
