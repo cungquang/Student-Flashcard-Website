@@ -1,6 +1,4 @@
 # learning_flashcard_aws
-Group 11:
-Doris Chan, Sukkwon On, Hong Quang Cung, Peiyuan Chan, Zhilong Gan
 
 Project Title: Flashcard
 
